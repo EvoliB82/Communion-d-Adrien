@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Du baptême à la communion</title>
+
+<link rel="stylesheet" href="assets/style.css">
+
+<!-- =======================================================
+     CSS
+     ======================================================= -->
+<style>
+  /* ---------- Reset & base ---------- */
+  :root{
+    /* Sky */
+    --sky-top:#bfe6d6;
+    --sky-mid:#d9efce;
+    --sky-bottom:#f5ecd6;
+
+    /* Forest greens */
+    --green-deep:#27462e;
+    --green-mid:#3e6b3f;
+    --green-soft:#7da559;
+    --green-pale:#a9c47e;
+
+    /* Path */
+    --dirt-dark:#7a5236;
+    --dirt-mid:#a9784f;
+    --dirt-light:#cf9f6c;
+
+    /* Gold / sacred accent */
+    --gold:#caa14d;
+    --gold-light:#ecd49a;
+    --gold-deep:#8c6a23;
+
+    /* Parchment (dialogue) */
+    --parchment:#fbf3e2;
+    --parchment-edge:#efe2c4;
+    --ink:#3a2f22;
+
+    --shadow-soft: 0 10px 24px rgba(35,40,25,0.18);
+    --ease-pop: cubic-bezier(.34,1.56,.64,1);
+  }
+
+  *{ box-sizing:border-box; }
+
+  html, body{
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;            /* no scrolling, ever */
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+    background:var(--green-deep);
+    -webkit-text-size-adjust:100%;
+  }
+
+  body{
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+    height:100dvh; /* better mobile viewport handling */
+  }
+
+  button{ font-family:inherit; }
+
+  /* Respect reduced-motion preferences */
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{
+      animation-duration:0.001ms !important;
+      animation-iteration-count:1 !important;
+      transition-duration:0.001ms !important;
+    }
+  }
+
+  /* =====================================================
+     SCENE — the forest, fills all remaining space
+     ===================================================== */
+  .scene{
+    position:relative;
+    flex:1 1 auto;
+    min-height:0;
+    width:100%;
+    overflow:hidden;
+    background:
+      radial-gradient(120% 60% at 50% 0%, var(--sky-top) 0%, var(--sky-mid) 45%, var(--sky-bottom) 100%);
+  }
+
+  /* Soft sun glow, top-right */
+  .sun-glow{
+    position:absolute;
+    top:-8%;
+    right:6%;
+    width:min(34vw, 340px);
+    height:min(34vw, 340px);
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(255,248,214,0.95) 0%, rgba(255,244,190,0.45) 35%, rgba(255,244,190,0) 70%);
+    filter:blur(2px);
+    animation:sunPulse 7s ease-in-out infinite;
+    pointer-events:none;
+    z-index:1;
+  }
+  @keyframes sunPulse{
+    0%,100%{ transform:scale(1); opacity:0.9; }
+    50%{ transform:scale(1.08); opacity:1; }
+  }
+
+  /* Distant haze along the horizon for depth */
+  .haze{
+    position:absolute;
+    inset:0;
+    background:linear-gradient(to bottom, rgba(255,255,255,0) 55%, rgba(245,238,214,0.55) 78%, rgba(245,238,214,0.15) 100%);
+    pointer-events:none;
+    z-index:2;
+  }
+
+  /* ---------- Header banner ---------- */
+  .scene-header{
+    position:absolute;
+    top:2.2%;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:8;
+    text-align:center;
+    padding:0.5em 1.4em 0.6em;
+    background:rgba(251,243,226,0.62);
+    border:1px solid rgba(202,161,77,0.55);
+    border-radius:999px;
+    backdrop-filter:blur(3px);
+    box-shadow:0 6px 16px rgba(40,40,20,0.12);
+    pointer-events:none;
+    max-width:90vw;
+  }
+  .scene-header .eyebrow{
+    display:block;
+    font-family:Georgia, serif;
+    font-size:clamp(0.55rem, 1.1vw, 0.7rem);
+    letter-spacing:0.22em;
+    color:var(--gold-deep);
+    text-transform:uppercase;
+    margin-bottom:0.15em;
+  }
+  .scene-header h1{
+    margin:0;
+    font-size:clamp(0.95rem, 2.6vw, 1.55rem);
+    font-weight:600;
+    color:var(--green-deep);
+    letter-spacing:0.01em;
+  }
+
+  /* =====================================================
+     TREES
+     ===================================================== */
+  .trees-layer{ position:absolute; inset:0; pointer-events:none; }
+  .trees-layer.back{ z-index:3; filter:blur(0.4px) saturate(0.85); }
+  .trees-layer.front{ z-index:6; }
+
+  .tree{
+    position:absolute;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    transform:translate(-50%, -100%);
+    transform-origin:bottom center;
+    animation:sway var(--sway-dur,6s) ease-in-out infinite;
+    animation-delay:var(--sway-delay,0s);
+  }
+  @keyframes sway{
+    0%,100%{ transform:translate(-50%,-100%) rotate(-1deg); }
+    50%{ transform:translate(-50%,-100%) rotate(1deg); }
+  }
+
+  .tree .foliage{
+    border-radius:50%;
+    background:radial-gradient(circle at 32% 28%, var(--green-pale) 0%, var(--green-soft) 45%, var(--green-mid) 78%, var(--green-deep) 100%);
+  }
+  .tree.back .foliage{
+    width:clamp(26px, 4.6vw, 58px);
+    height:clamp(26px, 4.6vw, 58px);
+    opacity:0.75;
+    box-shadow:
+      -0.7em 0.35em 0 -0.5em rgba(62,107,63,0.85),
+       0.7em 0.45em 0 -0.55em rgba(39,70,46,0.85),
+       0 -0.55em 0 -0.6em rgba(125,165,89,0.85);
+  }
+  .tree.front .foliage{
+    width:clamp(40px, 7.4vw, 96px);
+    height:clamp(40px, 7.4vw, 96px);
+    box-shadow:
+      -0.75em 0.4em 0 -0.45em rgba(62,107,63,0.95),
+       0.78em 0.5em 0 -0.5em rgba(39,70,46,0.95),
+       0 -0.6em 0 -0.55em rgba(125,165,89,0.95);
+  }
+  .tree .trunk{
+    width:clamp(6px, 1vw, 12px);
+    height:clamp(14px, 2.6vw, 30px);
+    background:linear-gradient(to right, var(--dirt-dark), var(--dirt-mid));
+    border-radius:0 0 3px 3px;
+    margin-top:-2px;
+  }
+
+  /* =====================================================
+     GROUND TEXTURE (mid grass wash)
+     ===================================================== */
+  .ground-wash{
+    position:absolute;
+    inset:0;
+    z-index:2;
+    background:linear-gradient(to bottom, rgba(125,165,89,0) 40%, rgba(125,165,89,0.28) 70%, rgba(62,107,63,0.45) 100%);
+    pointer-events:none;
+  }
+
+  /* =====================================================
+     PATH
+     ===================================================== */
+  .path-svg{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:4;
+    pointer-events:none;
+    overflow:visible;
+  }
+  .path-shadow{
+    fill:none;
+    stroke:rgba(40,30,15,0.22);
+    stroke-width:6.6;
+    stroke-linecap:round;
+    vector-effect:non-scaling-stroke;
+  }
+  .path-base{
+    fill:none;
+    stroke:var(--dirt-mid);
+    stroke-width:5.4;
+    stroke-linecap:round;
+  }
+  .path-edge{
+    fill:none;
+    stroke:var(--dirt-dark);
+    stroke-width:5.4;
+    stroke-linecap:round;
+    opacity:0.35;
+    stroke-dasharray:0.4 3.2;
+  }
+  .path-stones{
+    fill:none;
+    stroke:var(--dirt-light);
+    stroke-width:1.4;
+    stroke-linecap:round;
+    stroke-dasharray:0.2 2.6;
+    opacity:0.85;
+  }
+
+  /* =====================================================
+     GRASS FOREGROUND (jagged silhouette, bottom edge)
+     ===================================================== */
+  .grass-front{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    width:100%;
+    height:9%;
+    z-index:7;
+    pointer-events:none;
+  }
+  .grass-front svg{ width:100%; height:100%; display:block; }
+
+  /* =====================================================
+     FLOATING AMBIENT BITS (pollen / fireflies / butterflies)
+     ===================================================== */
+  .ambient{ position:absolute; inset:0; z-index:9; pointer-events:none; }
+  .speck{
+    position:absolute;
+    width:5px; height:5px;
+    border-radius:50%;
+    background:radial-gradient(circle, #fff8df 0%, rgba(255,248,223,0) 80%);
+    opacity:0.85;
+    animation:drift 10s ease-in-out infinite;
+  }
+  @keyframes drift{
+    0%{ transform:translate(0,0); opacity:0; }
+    10%{ opacity:0.9; }
+    50%{ transform:translate(14px,-26px); }
+    90%{ opacity:0.7; }
+    100%{ transform:translate(-6px,-48px); opacity:0; }
+  }
+  .butterfly{
+    position:absolute;
+    font-size:clamp(14px, 1.8vw, 20px);
+    animation:flutter 9s ease-in-out infinite;
+    filter:drop-shadow(0 2px 2px rgba(0,0,0,0.15));
+  }
+  @keyframes flutter{
+    0%{ transform:translate(0,0) rotate(0deg); }
+    25%{ transform:translate(22px,-14px) rotate(8deg); }
+    50%{ transform:translate(4px,-30px) rotate(-6deg); }
+    75%{ transform:translate(-20px,-10px) rotate(6deg); }
+    100%{ transform:translate(0,0) rotate(0deg); }
+  }
+
+  /* =====================================================
+     MILESTONES
+     ===================================================== */
+  .milestone{
+    position:absolute;
+    z-index:10;
+    transform:translate(-50%,-50%);
+    width:clamp(50px, 8vw, 88px);
+    height:clamp(50px, 8vw, 88px);
+    border-radius:50%;
+    border:none;
+    padding:0;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:radial-gradient(circle at 32% 28%, var(--gold-light) 0%, var(--gold) 55%, var(--gold-deep) 100%);
+    box-shadow:
+      0 0 0 4px rgba(251,243,226,0.9),
+      0 6px 14px rgba(40,30,10,0.35);
+    transition:transform 0.25s var(--ease-pop), box-shadow 0.25s ease;
+  }
+  .milestone:hover,
+  .milestone:focus-visible{
+    transform:translate(-50%,-50%) scale(1.12) translateY(-3px);
+    box-shadow:
+      0 0 0 4px rgba(251,243,226,0.95),
+      0 12px 22px rgba(40,30,10,0.4),
+      0 0 0 8px rgba(202,161,77,0.25);
+  }
+  .milestone:active{ transform:translate(-50%,-50%) scale(0.97); }
+  .milestone:focus-visible{ outline:3px solid #fff; outline-offset:3px; }
+
+  .milestone .icon{
+    width:54%;
+    height:54%;
+    display:block;
+    color:var(--ink);
+  }
+  .milestone .icon svg{ width:100%; height:100%; fill:none; stroke:var(--ink); stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+
+  .milestone .order-badge{
+    position:absolute;
+    top:-6px;
+    right:-6px;
+    width:clamp(18px,2.6vw,24px);
+    height:clamp(18px,2.6vw,24px);
+    border-radius:50%;
+    background:var(--green-deep);
+    color:#fbf3e2;
+    font-size:clamp(0.6rem,1.2vw,0.75rem);
+    font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:2px solid #fbf3e2;
+    font-family:Georgia,serif;
+  }
+
+  /* Tooltip label shown above marker on hover/focus */
+  .milestone .tip{
+    position:absolute;
+    bottom:120%;
+    left:50%;
+    transform:translate(-50%,6px);
+    white-space:nowrap;
+    background:var(--parchment);
+    color:var(--ink);
+    border:1px solid var(--parchment-edge);
+    padding:0.3em 0.7em;
+    border-radius:8px;
+    font-size:clamp(0.7rem, 1.4vw, 0.85rem);
+    box-shadow:var(--shadow-soft);
+    opacity:0;
+    pointer-events:none;
+    transition:opacity 0.2s ease, transform 0.2s ease;
+  }
+  .milestone .tip::after{
+    content:"";
+    position:absolute;
+    top:100%;
+    left:50%;
+    transform:translateX(-50%);
+    border:6px solid transparent;
+    border-top-color:var(--parchment);
+  }
+  .milestone:hover .tip,
+  .milestone:focus-visible .tip{
+    opacity:1;
+    transform:translate(-50%,0);
+  }
+
+  /* gentle "ready to click" breathing ring on the final milestone */
+  .milestone.final::before{
+    content:"";
+    position:absolute;
+    inset:-8px;
+    border-radius:50%;
+    border:2px solid rgba(202,161,77,0.55);
+    animation:breathe 2.6s ease-in-out infinite;
+  }
+  @keyframes breathe{
+    0%,100%{ transform:scale(1); opacity:0.6; }
+    50%{ transform:scale(1.18); opacity:0; }
+  }
+
+  /* =====================================================
+     DIALOGUE (Mario-64-inspired pop dialogue, parchment skin)
+     ===================================================== */
+  .dialogue-overlay{
+    position:fixed;
+    inset:0;
+    z-index:50;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:5vh 5vw;
+    background:rgba(20,26,16,0);
+    pointer-events:none;
+    transition:background 0.25s ease;
+  }
+  .dialogue-overlay.active{
+    background:rgba(20,26,16,0.45);
+    pointer-events:auto;
+  }
+
+  .dialogue-box{
+    position:relative;
+    width:min(560px, 92vw);
+    max-height:82vh;
+    overflow-y:auto;
+    background:
+      radial-gradient(140% 100% at 0% 0%, rgba(255,255,255,0.5), rgba(255,255,255,0) 40%),
+      var(--parchment);
+    border:3px solid var(--gold);
+    border-radius:18px;
+    box-shadow:
+      0 0 0 6px rgba(251,243,226,0.9),
+      0 0 0 9px var(--gold-deep),
+      0 18px 40px rgba(20,20,10,0.45);
+    padding:1.6em 1.9em 1.8em;
+    transform:scale(0.4);
+    opacity:0;
+    transition:transform 0.32s var(--ease-pop), opacity 0.22s ease;
+  }
+  .dialogue-overlay.active .dialogue-box{
+    transform:scale(1);
+    opacity:1;
+  }
+
+  .dialogue-close{
+    position:absolute;
+    top:0.6em;
+    right:0.6em;
+    width:2em;
+    height:2em;
+    border-radius:50%;
+    border:2px solid var(--gold-deep);
+    background:var(--gold-light);
+    color:var(--ink);
+    font-size:1.1rem;
+    line-height:1;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:transform 0.2s ease, background 0.2s ease;
+  }
+  .dialogue-close:hover{ transform:rotate(90deg) scale(1.08); background:var(--gold); }
+  .dialogue-close:focus-visible{ outline:3px solid var(--green-mid); outline-offset:2px; }
+
+  .dialogue-head{
+    display:flex;
+    align-items:center;
+    gap:0.7em;
+    margin-bottom:0.5em;
+    padding-right:1.6em;
+  }
+  .dialogue-icon{
+    flex:0 0 auto;
+    width:clamp(34px,6vw,46px);
+    height:clamp(34px,6vw,46px);
+    border-radius:50%;
+    background:radial-gradient(circle at 32% 28%, var(--gold-light), var(--gold) 60%, var(--gold-deep));
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 3px 8px rgba(40,30,10,0.3);
+  }
+  .dialogue-icon svg{ width:58%; height:58%; fill:none; stroke:var(--ink); stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+
+  .dialogue-step{
+    font-size:0.7rem;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--gold-deep);
+    margin:0 0 0.1em;
+  }
+  .dialogue-title{
+    margin:0;
+    font-size:clamp(1.15rem, 3vw, 1.5rem);
+    color:var(--green-deep);
+    font-weight:700;
+  }
+  .drop-cap{
+    font-size:1.25em;
+    color:var(--gold-deep);
+  }
+
+  .dialogue-text{
+    margin:0.6em 0 0;
+    color:var(--ink);
+    font-size:clamp(0.95rem, 1.6vw, 1.08rem);
+    line-height:1.6;
+  }
+
+  .dialogue-action{ margin-top:1.1em; text-align:center; }
+  .enter-btn{
+    display:inline-block;
+    border:none;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:clamp(0.95rem, 1.8vw, 1.05rem);
+    font-weight:700;
+    letter-spacing:0.02em;
+    color:var(--green-deep);
+    background:linear-gradient(180deg, var(--gold-light), var(--gold));
+    padding:0.75em 1.6em;
+    border-radius:999px;
+    box-shadow:0 6px 16px rgba(140,106,35,0.45), inset 0 1px 0 rgba(255,255,255,0.6);
+    transition:transform 0.2s var(--ease-pop), box-shadow 0.2s ease;
+  }
+  .enter-btn:hover{ transform:translateY(-2px) scale(1.03); box-shadow:0 10px 22px rgba(140,106,35,0.55); }
+  .enter-btn:active{ transform:translateY(0) scale(0.98); }
+  .enter-btn:focus-visible{ outline:3px solid var(--green-mid); outline-offset:3px; }
+
+  /* small blinking continue marker, nod to the N64 dialogue inspiration */
+  .continue-indicator{
+    position:absolute;
+    bottom:0.55em;
+    right:0.8em;
+    width:0;
+    height:0;
+    border-left:6px solid transparent;
+    border-right:6px solid transparent;
+    border-top:8px solid var(--gold-deep);
+    opacity:0.7;
+    animation:blink 1.1s steps(1) infinite;
+  }
+  @keyframes blink{ 50%{ opacity:0; } }
+
+  /* =====================================================
+     FOOTER (placeholder strip — existing footer goes here)
+     ===================================================== */
+  .site-footer{
+    flex:0 0 auto;
+    width:100%;
+    min-height:44px;
+    background:linear-gradient(to bottom, var(--green-deep), #1d3522);
+    border-top:1px solid rgba(202,161,77,0.5);
+  }
+
+  /* =====================================================
+     RESPONSIVE TUNING
+     ===================================================== */
+  @media (max-width:640px){
+    .scene-header{ padding:0.4em 1em 0.5em; }
+    .scene-header .eyebrow{ display:none; }
+    .dialogue-box{ padding:1.3em 1.3em 1.5em; }
+  }
+  @media (max-height:480px){
+    .scene-header{ top:1%; }
+    .milestone{ width:clamp(40px,7vw,60px); height:clamp(40px,7vw,60px); }
+  }
+</style>
+</head>
+<body>
+
+    <audio id="music" loop>
+        <source src="parcours.mp3" type="audio/mpeg">
+    </audio>
+
+    <button class="sound-btn">&#128266;</button>
+
+
+  <!-- =====================================================
+       SCENE: forest background, path, milestones
+       ===================================================== -->
+  <main class="scene" id="scene">
+
+    <div class="sun-glow" aria-hidden="true"></div>
+    <div class="haze" aria-hidden="true"></div>
+
+    <!-- Title banner -->
+    <header class="scene-header">
+      <span class="eyebrow">Foi &middot; Famille &middot; Voyage</span>
+      <h1>Du baptême à la communion</h1>
+    </header>
+
+    <!-- Background trees -->
+    <div class="trees-layer back" aria-hidden="true">
+      <div class="tree back" style="left:4%;  top:14%; --sway-dur:6.5s; --sway-delay:0.2s;"><div class="foliage"></div><div class="trunk"></div></div>
+      <div class="tree back" style="left:15%; top:7%;  --sway-dur:7.2s; --sway-delay:1.1s;"><div class="foliage"></div><div class="trunk"></div></div>
+      <div class="tree back" style="left:23%; top:18%; --sway-dur:6.8s; --sway-delay:0.5s;"><div class="foliage"></div><div class="trunk"></div></div>
+      <div class="tree back" style="left:39%; top:9%;  --sway-dur:7.6s; --sway-delay:0.9s;"><div class="foliage"></div><div class="trunk"></div></div>
+      <div class="tree back" style="left:47%; top:20%; --sway-dur:6.2s; --sway-delay:0.3s;"><div class="foliage"></div><div class="trunk"></div></div>
+      <div class="tree back" style="left:61%; top:10%; --sway-dur:7.0s; --sway-delay:1.4s;"><div class="foliage"></div><div class="trunk"></div></div>
+      <div class="tree back" style="left:68%; top:21%; --sway-dur:6.6s; --sway-delay:0.6s;"><div class="foliage"></div><div class="trunk"></div></div>
+      <div class="tree back" style="left:81%; top:8%;  --sway-dur:7.4s; --sway-delay:1.0s;"><div class="foliage"></div><div class="trunk"></div></div>
+      <div class="tree back" style="left:92%; top:17%; --sway-dur:6.9s; --sway-delay:0.4s;"><div class="foliage"></div><div class="trunk"></div></div>
+      <div class="tree back" style="left:9%;  top:46%; --sway-dur:7.1s; --sway-delay:1.3s;"><div class="foliage"></div><div class="trunk"></div></div>
+      <div class="tree back" style="left:96%; top:42%; --sway-dur:6.4s; --sway-delay:0.7s;"><div class="foliage"></div><div class="trunk"></div></div>
+    </div>
+
+    <!-- Ground colour wash -->
+    <div class="ground-wash" aria-hidden="true"></div>
+
+    <!-- The winding forest path -->
+    <svg class="path-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <path class="path-shadow" d="M 2,89 C 4,87 7,83 10,80 C 16,76 20,46 30,42 C 38,38 46,50 52,72 C 60,86 66,40 74,36 C 80,32 86,50 90,64 C 93,70 96,66 98,58" />
+      <path class="path-base"   d="M 2,88 C 4,86 7,82 10,80 C 16,76 20,46 30,42 C 38,38 46,50 52,72 C 60,86 66,40 74,36 C 80,32 86,50 90,64 C 93,70 96,66 98,58" />
+      <path class="path-edge"   d="M 2,88 C 4,86 7,82 10,80 C 16,76 20,46 30,42 C 38,38 46,50 52,72 C 60,86 66,40 74,36 C 80,32 86,50 90,64 C 93,70 96,66 98,58" />
+      <path class="path-stones" d="M 2,88 C 4,86 7,82 10,80 C 16,76 20,46 30,42 C 38,38 46,50 52,72 C 60,86 66,40 74,36 C 80,32 86,50 90,64 C 93,70 96,66 98,58" />
+    </svg>
+
+    <!-- Foreground trees -->
+    <div class="trees-layer front" aria-hidden="true">
+      <div class="tree front" style="left:3%;  top:96%; --sway-dur:6.3s; --sway-delay:0.1s;"><div class="foliage"></div><div class="trunk"></div></div>
+      <div class="tree front" style="left:97%; top:90%; --sway-dur:6.7s; --sway-delay:0.5s;"><div class="foliage"></div><div class="trunk"></div></div>
+      <div class="tree front" style="left:20%; top:99%; --sway-dur:7.3s; --sway-delay:0.8s;"><div class="foliage"></div><div class="trunk"></div></div>
+      <div class="tree front" style="left:62%; top:97%; --sway-dur:6.9s; --sway-delay:1.2s;"><div class="foliage"></div><div class="trunk"></div></div>
+      <div class="tree front" style="left:42%; top:5%;  --sway-dur:7.5s; --sway-delay:0.3s; transform-origin:top center;"><div class="foliage"></div><div class="trunk"></div></div>
+    </div>
+
+    <!-- Ambient floating bits -->
+    <div class="ambient" aria-hidden="true">
+      <div class="speck" style="left:18%; top:55%; animation-delay:0s;"></div>
+      <div class="speck" style="left:35%; top:35%; animation-delay:2.2s;"></div>
+      <div class="speck" style="left:58%; top:60%; animation-delay:4.1s;"></div>
+      <div class="speck" style="left:78%; top:40%; animation-delay:1.3s;"></div>
+      <div class="speck" style="left:88%; top:58%; animation-delay:3.4s;"></div>
+      <div class="butterfly" style="left:24%; top:62%;">🦋</div>
+      <div class="butterfly" style="left:66%; top:48%; animation-delay:2s;">🦋</div>
+    </div>
+
+    <!-- =================================================
+         MILESTONES — positions match the path's curve
+         ================================================= -->
+
+    <!-- 1. Baptism -->
+    <button class="milestone" style="left:10%; top:80%;" data-id="baptism" aria-label="Milestone 1 of 5: Baptism">
+      <span class="order-badge">1</span>
+      <span class="tip">Baptême</span>
+      <span class="icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 2c3 5 6.5 9.2 6.5 12.8A6.5 6.5 0 0 1 12 21a6.5 6.5 0 0 1-6.5-6.2C5.5 11.2 9 7 12 2Z"/></svg>
+      </span>
+    </button>
+
+    <!-- 2. First Year of Catechism -->
+    <button class="milestone" style="left:30%; top:42%;" data-id="year1" aria-label="Milestone 2 of 5: First Year of Catechism">
+      <span class="order-badge">2</span>
+      <span class="tip">Première Année de Catechisme</span>
+      <span class="icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M3 5.5C5 4.4 8 4 12 5v14c-4-1-7-.6-9 .5V5.5Z"/><path d="M21 5.5C19 4.4 16 4 12 5v14c4-1 7-.6 9 .5V5.5Z"/></svg>
+      </span>
+    </button>
+
+    <!-- 3. Second Year of Catechism -->
+    <button class="milestone" style="left:52%; top:72%;" data-id="year2" aria-label="Milestone 3 of 5: Second Year of Catechism">
+      <span class="order-badge">3</span>
+      <span class="tip">Deuxième Année de Catechisme</span>
+      <span class="icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M4 4.8c2.3-1 5.2-1.3 8 0v14.4c-2.8-1.3-5.7-1-8 0V4.8Z"/><path d="M20 4.8c-2.3-1-5.2-1.3-8 0v14.4c2.8-1.3 5.7-1 8 0V4.8Z"/><path d="M12 4v3M10.4 5.6h3.2"/></svg>
+      </span>
+    </button>
+
+    <!-- 4. Preparation -->
+    <button class="milestone" style="left:74%; top:36%;" data-id="prep" aria-label="Milestone 4 of 5: Preparation">
+      <span class="order-badge">4</span>
+      <span class="tip">Préparation</span>
+      <span class="icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 3c1.4 1.7 1.2 3-.1 4.1-1 .9-1 2 .1 2.5 1.6.7 1.8 2.6.7 3.6"/><path d="M9.5 13c-1.6 1-2.5 2.6-2.5 4.5A5 5 0 0 0 12 22a5 5 0 0 0 5-4.5c0-2-1-3.6-2.7-4.6"/></svg>
+      </span>
+    </button>
+
+    <!-- 5. First Communion Day (final) -->
+    <button class="milestone final" style="left:90%; top:64%;" data-id="communion" aria-label="Milestone 5 of 5: First Communion Day">
+      <span class="order-badge">5</span>
+      <span class="tip">Jour de la Première Communion</span>
+      <span class="icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="4.6" r="1.7"/><path d="M6 20h12M9 20c-1-3 .3-5.4 1-6.6-1.7-.4-3-1.8-3-4.4h9.9c0 2.6-1.3 4-3 4.4.7 1.2 2 3.6 1 6.6"/></svg>
+      </span>
+    </button>
+
+    <!-- Foreground grass silhouette -->
+    <div class="grass-front" aria-hidden="true">
+      <svg viewBox="0 0 100 16" preserveAspectRatio="none">
+        <path d="M0,16 L0,6 L2,9 L4,4 L6,9 L8,5 L10,10 L12,5 L14,9 L16,4 L18,9 L20,6 L22,10 L24,5 L26,9 L28,4 L30,9 L32,6 L34,10 L36,5 L38,9 L40,4 L42,9 L44,6 L46,10 L48,5 L50,9 L52,4 L54,9 L56,6 L58,10 L60,5 L62,9 L64,4 L66,9 L68,6 L70,10 L72,5 L74,9 L76,4 L78,9 L80,6 L82,10 L84,5 L86,9 L88,4 L90,9 L92,6 L94,10 L96,5 L98,9 L100,6 L100,16 Z"
+              fill="#3e6b3f"/>
+        <path d="M0,16 L0,10 L3,12 L6,9 L9,12 L12,8 L15,13 L18,9 L21,12 L24,8 L27,13 L30,9 L33,12 L36,8 L39,13 L42,9 L45,12 L48,8 L51,13 L54,9 L57,12 L60,8 L63,13 L66,9 L69,12 L72,8 L75,13 L78,9 L81,12 L84,8 L87,13 L90,9 L93,12 L96,8 L99,12 L100,10 L100,16 Z"
+              fill="#27462e"/>
+      </svg>
+    </div>
+
+  </main>
+
+  <!-- =====================================================
+       DIALOGUE OVERLAY (Super Mario 64–inspired text box)
+       ===================================================== -->
+  <div class="dialogue-overlay" id="dialogueOverlay">
+    <div class="dialogue-box" id="dialogueBox" role="dialog" aria-modal="true" aria-labelledby="dialogueTitle" tabindex="-1">
+      <button class="dialogue-close" id="dialogueClose" aria-label="Close">&times;</button>
+
+      <div class="dialogue-head">
+        <div class="dialogue-icon" id="dialogueIcon"></div>
+        <div>
+          <p class="dialogue-step" id="dialogueStep"></p>
+          <h2 class="dialogue-title" id="dialogueTitle"></h2>
+        </div>
+      </div>
+
+      <p class="dialogue-text" id="dialogueText"></p>
+
+      <div class="dialogue-action" id="dialogueAction"></div>
+
+      <span class="continue-indicator" aria-hidden="true"></span>
+    </div>
+  </div>
+
+  <!-- =====================================================
+       FOOTER — reserved space only, no content created here
+       ===================================================== -->
+  <footer class="site-footer">
+    <!-- Existing footer will be inserted here -->
+  </footer>
+
+  <!-- =====================================================
+       JAVASCRIPT
+       ===================================================== -->
+  <script src="assets/effects.js"></script>
+  <script src="script.js"></script>
+  <script>
+  (function () {
+    "use strict";
+
+    /* ---------------------------------------------------
+       1. Content for each milestone.
+       Replace the "text" strings later with real copy —
+       everything else (icons, order, behaviour) stays put.
+       --------------------------------------------------- */
+    var MILESTONES = {
+      baptism: {
+        step: "Step 1 of 5",
+        title: "Baptême",
+        icon: '<svg viewBox="0 0 24 24"><path d="M12 2c3 5 6.5 9.2 6.5 12.8A6.5 6.5 0 0 1 12 21a6.5 6.5 0 0 1-6.5-6.2C5.5 11.2 9 7 12 2Z"/></svg>',
+        text: "Adrien a été baptisé le 25 mai 2014 à l'église de Saint Nicolas de la Grave. Le baptême est le premier sacrement de l'initiation chrétienne, marquant l'entrée dans la communauté des croyants.",
+        isFinal: false
+      },
+      year1: {
+        step: "Step 2 of 5",
+        title: "Première année de catéchisme",
+        icon: '<svg viewBox="0 0 24 24"><path d="M3 5.5C5 4.4 8 4 12 5v14c-4-1-7-.6-9 .5V5.5Z"/><path d="M21 5.5C19 4.4 16 4 12 5v14c4-1 7-.6 9 .5V5.5Z"/></svg>',
+        text: "Adrien a suivi sa première année de cathéchisme à Castelsarrain avec Maité, sur l'année 2024-2025. Le catéchisme est un temps d'apprentissage et de découverte de la foi chrétienne, des enseignements de Jésus et des sacrements.",
+        isFinal: false
+      },
+      year2: {
+        step: "Step 3 of 5",
+        title: "Deuxième année de catéchisme",
+        icon: '<svg viewBox="0 0 24 24"><path d="M4 4.8c2.3-1 5.2-1.3 8 0v14.4c-2.8-1.3-5.7-1-8 0V4.8Z"/><path d="M20 4.8c-2.3-1-5.2-1.3-8 0v14.4c2.8-1.3 5.7-1 8 0V4.8Z"/><path d="M12 4v3M10.4 5.6h3.2"/></svg>',
+        text: "Adrien a suivi sa deuxième année de cathéchisme à Castelsarrain avec Marie-Odile, sur l'année 2025-2026. Cette année l'a préparé pour la célébration de sa première communion.",
+        isFinal: false
+      },
+      prep: {
+        step: "Step 4 of 5",
+        title: "Préparation",
+        icon: '<svg viewBox="0 0 24 24"><path d="M12 3c1.4 1.7 1.2 3-.1 4.1-1 .9-1 2 .1 2.5 1.6.7 1.8 2.6.7 3.6"/><path d="M9.5 13c-1.6 1-2.5 2.6-2.5 4.5A5 5 0 0 0 12 22a5 5 0 0 0 5-4.5c0-2-1-3.6-2.7-4.6"/></svg>',
+        text: "Adrien a préparé sa première communion le 20 Juin 2026, à l'église Saint Sauveur à Castelsarrasin. La préparation s'est faite sous la surveillance de Marie-Odile et de frère Salvator.",
+        isFinal: false
+      },
+      communion: {
+        step: "Step 5 of 5",
+        title: "Jour de la première communion",
+        icon: '<svg viewBox="0 0 24 24"><circle cx="12" cy="4.6" r="1.7"/><path d="M6 20h12M9 20c-1-3 .3-5.4 1-6.6-1.7-.4-3-1.8-3-4.4h9.9c0 2.6-1.3 4-3 4.4.7 1.2 2 3.6 1 6.6"/></svg>',
+        text: "Adrien a célébré sa première communion le 21 Juin 2026 à l'église Saint Sauveur à Castelsarrasin. La cérémonie a été officiée par le père Elias et a été suivie d'une réception avec la famille. ",
+        isFinal: true
+      }
+    };
+
+    /* Where to send the user from the final milestone.
+       Change this single line if the destination ever moves. */
+    var COMMUNION_PAGE_URL = "communion.html";
+
+    /* ---------------------------------------------------
+       2. Cache DOM references
+       --------------------------------------------------- */
+    var overlay   = document.getElementById("dialogueOverlay");
+    var box       = document.getElementById("dialogueBox");
+    var closeBtn  = document.getElementById("dialogueClose");
+    var stepEl    = document.getElementById("dialogueStep");
+    var titleEl   = document.getElementById("dialogueTitle");
+    var textEl    = document.getElementById("dialogueText");
+    var iconEl    = document.getElementById("dialogueIcon");
+    var actionEl  = document.getElementById("dialogueAction");
+    var milestoneButtons = document.querySelectorAll(".milestone");
+
+    var lastFocusedTrigger = null;
+
+    /* ---------------------------------------------------
+       3. Build the drop-cap title, e.g. "Baptism" ->
+          <span class="drop-cap">B</span>aptism
+       --------------------------------------------------- */
+    function renderTitle(title) {
+      titleEl.innerHTML =
+        '<span class="drop-cap">' + title.charAt(0) + "</span>" + title.slice(1);
+    }
+
+    /* ---------------------------------------------------
+       4. Open the dialogue for a given milestone id
+       --------------------------------------------------- */
+    function openDialogue(id, triggerEl) {
+      var data = MILESTONES[id];
+      if (!data) return;
+
+      lastFocusedTrigger = triggerEl || null;
+
+      stepEl.textContent = data.step;
+      renderTitle(data.title);
+      textEl.textContent = data.text;
+      iconEl.innerHTML = data.icon;
+
+      // Final milestone gets an extra call-to-action button
+      actionEl.innerHTML = "";
+      if (data.isFinal) {
+        var enterBtn = document.createElement("button");
+        enterBtn.type = "button";
+        enterBtn.className = "enter-btn";
+        enterBtn.textContent = "Accéder à l'histoire de la journée";
+        enterBtn.addEventListener("click", function () {
+          window.location.href = COMMUNION_PAGE_URL;
+        });
+        actionEl.appendChild(enterBtn);
+      }
+
+      overlay.classList.add("active");
+
+      // Move focus into the dialogue for keyboard / screen-reader users
+      window.requestAnimationFrame(function () {
+        closeBtn.focus();
+      });
+    }
+
+    /* ---------------------------------------------------
+       5. Close the dialogue
+       --------------------------------------------------- */
+    function closeDialogue() {
+      overlay.classList.remove("active");
+      if (lastFocusedTrigger) {
+        lastFocusedTrigger.focus();
+      }
+    }
+
+    /* ---------------------------------------------------
+       6. Wire up events
+       --------------------------------------------------- */
+    milestoneButtons.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        openDialogue(btn.dataset.id, btn);
+      });
+    });
+
+    closeBtn.addEventListener("click", closeDialogue);
+
+    // Click on the dimmed backdrop (outside the box) closes it
+    overlay.addEventListener("click", function (e) {
+      if (e.target === overlay) closeDialogue();
+    });
+
+    // Escape key closes the dialogue
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && overlay.classList.contains("active")) {
+        closeDialogue();
+      }
+    });
+
+    // Basic focus trap while the dialogue is open
+    box.addEventListener("keydown", function (e) {
+      if (e.key !== "Tab") return;
+      var focusable = box.querySelectorAll("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
+      if (!focusable.length) return;
+      var first = focusable[0];
+      var last  = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    });
+
+  })();
+window.addEventListener("load", () => {
+
+    const startScreen = document.getElementById("start-screen");
+    const music = document.querySelector("audio");
+
+    document.addEventListener("click", () => {
+
+        // Fondu de sortie de l'écran d'accueil (voir .is-hidden dans style.css)
+       
+
+        if (music) {
+            music.play().catch(console.error);
+        }
+
+    }, { once: true });
+
+});
+  </script>
+</body>
+</html>
